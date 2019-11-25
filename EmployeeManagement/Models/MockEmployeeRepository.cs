@@ -1,7 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EmployeeManagement.Models
 {
@@ -16,8 +14,14 @@ namespace EmployeeManagement.Models
                 new Employee(){Id=1,Name="Mary",Department=Dept.HR,Email="mary@abc.abc"},
                 new Employee(){Id=2,Name="John",Department=Dept.IT,Email="john@abc.abc"},
                 new Employee(){Id=3,Name="Sam",Department=Dept.IT,Email="sam@abc.abc"},
-
             };
+        }
+
+        public Employee Add(Employee employee)
+        {
+            employee.Id = _employeelist.Max(e => e.Id) + 1;
+            _employeelist.Add(employee);
+            return employee;
         }
 
         public IEnumerable<Employee> GetAllEmployee()
@@ -27,7 +31,7 @@ namespace EmployeeManagement.Models
 
         public Employee GetEmployee(int Id)
         {
-            return _employeelist.FirstOrDefault(e=>e.Id==Id);
+            return _employeelist.FirstOrDefault(e => e.Id == Id);
         }
     }
 }
