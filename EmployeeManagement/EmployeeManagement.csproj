@@ -6,6 +6,15 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Migrations\20191126153959_AddPhotoPartColumn.cs" />
+    <Compile Remove="Migrations\20191126153959_AddPhotoPartColumn.Designer.cs" />
+    <Compile Remove="Migrations\20191126154258_AddSomeProperty.cs" />
+    <Compile Remove="Migrations\20191126154258_AddSomeProperty.Designer.cs" />
+    <Compile Remove="Migrations\20191126161142_AddPhotoPathColumn.cs" />
+    <Compile Remove="Migrations\20191126161142_AddPhotoPathColumn.Designer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="3.0.0">
       <PrivateAssets>all</PrivateAssets>
