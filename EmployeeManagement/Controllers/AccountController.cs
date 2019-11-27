@@ -1,4 +1,5 @@
 ﻿using EmployeeManagement.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
@@ -26,13 +27,13 @@ namespace EmployeeManagement.Controllers
             return RedirectToAction("index", "home");
         }
 
-        [HttpGet]
+        [HttpGet, AllowAnonymous]
         public IActionResult Register()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost,AllowAnonymous]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
             if (ModelState.IsValid)
@@ -55,13 +56,13 @@ namespace EmployeeManagement.Controllers
             return View(model);
         }
 
-        [HttpGet]
+        [HttpGet,AllowAnonymous]
         public IActionResult Login()
         {
             return View();
         }
 
-        [HttpPost]
+        [HttpPost,AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
             if (ModelState.IsValid)
