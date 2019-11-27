@@ -1,6 +1,7 @@
 using EmployeeManagement.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -23,13 +24,12 @@ namespace EmployeeManagement
         {
             services.AddDbContextPool<AppDbContext>(
                 options => options.UseSqlServer(_config.GetConnectionString("EmployeeDBConnection")));
-            
+
+            services.AddIdentity<IdentityUser, IdentityRole>().AddEntityFrameworkStores<AppDbContext>();
+
             services.AddMvc(option => option.EnableEndpointRouting = false)
                 .AddXmlSerializerFormatters();
 
-            //services.AddSingleton<IEmployeeRepository, MockEmployeeRepository>();
-            //services.AddScoped<IEmployeeRepository, MockEmployeeRepository>();
-            //services.AddTransient<IEmployeeRepository, MockEmployeeRepository>();
 
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
 
@@ -45,16 +45,13 @@ namespace EmployeeManagement
             else
             {
                 app.UseExceptionHandler("/Error");
-                
-                
-                //app.UseStatusCodePages();
-                //app.UseStatusCodePagesWithRedirects("/Error/{0}");
+ 
                 app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
 
             app.UseStaticFiles();
 
-            app.UseMvcWithDefaultRoute();
+            app.UseAuthentication();
 
             app.UseMvc(routes =>
             {
