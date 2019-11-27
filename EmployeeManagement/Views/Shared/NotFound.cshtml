@@ -1,0 +1,12 @@
+﻿@{
+    ViewBag.Title = "Not Found";
+}
+
+<h1 class="text-danger">@ViewBag.ErrorMessage</h1>
+
+<h1 class="text-center">Path Not Found:  @ViewBag.Path</h1>
+<h1 class="text-center">Query Not Valid:  @ViewBag.QS</h1>
+
+<a asp-controller="home" asp-action="index">
+    Click here to navigate to the home page
+</a>
