@@ -29,7 +29,7 @@ namespace EmployeeManagement
 
             services.AddIdentity<IdentityUser, IdentityRole>(option =>
             {
-                option.Password.RequiredLength = 10;
+                option.Password.RequiredLength = 9;
                 option.Password.RequiredUniqueChars = 3;
             }).AddEntityFrameworkStores<AppDbContext>();
 

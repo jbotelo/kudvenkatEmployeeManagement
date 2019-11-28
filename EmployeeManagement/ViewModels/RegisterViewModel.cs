@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using EmployeeManagement.Utilities;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,6 +11,7 @@ namespace EmployeeManagement.ViewModels
     public class RegisterViewModel
     {
         [Required,EmailAddress,Remote("IsEmailInUse",controller:"Account")]
+        [ValidEmailDomain(allowedDomain:"abc.abc", ErrorMessage ="Email Domain must be abc.abc")]
         public string Email { get; set; }
         [Required,DataType(DataType.Password)]
         public string Password { get; set; }
