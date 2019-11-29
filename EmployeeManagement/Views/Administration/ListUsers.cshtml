@@ -27,10 +27,17 @@
                        class="btn btn-primary">
                         Edit
                     </a>
-                    <button type="submit" class="btn btn-danger"
-                            onclick="return confirm('Are you sure you want to delete user: @user.UserName')">
-                        Delete
-                    </button>
+
+                    <span id="confirmDeleteSpan_@user.Id" style="display:none">
+                        <span>Are you sure you want to delete?</span>
+                        <button type="submit" class="btn btn-danger">Yes</button>
+                        <a href="#" class="btn btn-primary"
+                           onclick="confirmDelete('@user.Id',false)">No</a>
+                    </span>
+                    <span id="deleteSpan_@user.Id">
+                        <a href="#" class="btn btn-danger"
+                           onclick="confirmDelete('@user.Id',true)">Delete</a>
+                    </span>
                 </form>
             </div>
         </div>
@@ -50,4 +57,10 @@ else
             </a>
         </div>
     </div>
+}
+
+@section Scripts {
+
+    <script src="~/js/CustomScript.js"></script>
+
 }
