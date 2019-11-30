@@ -28,17 +28,16 @@ namespace EmployeeManagement.Controllers
         {
             var user = await userManager.FindByIdAsync(id);
 
-            if(user==null)
+            if (user == null)
             {
                 ViewBag.ErrorMessage = $"User with Id = {id} cannot be found";
                 return View("NotFound");
             }
-
             else
             {
                 var result = await userManager.DeleteAsync(user);
 
-                if(result.Succeeded)
+                if (result.Succeeded)
                 {
                     return RedirectToAction("ListUsers");
                 }
@@ -50,7 +49,6 @@ namespace EmployeeManagement.Controllers
 
                 return View("ListUsers");
             }
-
         }
 
         [HttpPost]
@@ -63,7 +61,6 @@ namespace EmployeeManagement.Controllers
                 ViewBag.ErrorMessage = $"Role with Id = {id} cannot be found";
                 return View("NotFound");
             }
-
             else
             {
                 var result = await roleManager.DeleteAsync(role);
@@ -80,7 +77,6 @@ namespace EmployeeManagement.Controllers
 
                 return View("ListRoles");
             }
-
         }
 
         [HttpGet]
@@ -109,7 +105,7 @@ namespace EmployeeManagement.Controllers
                 Email = user.Email,
                 UserName = user.UserName,
                 City = user.City,
-                Claims = userClaims.Select(c=>c.Value).ToList(),
+                Claims = userClaims.Select(c => c.Value).ToList(),
                 Roles = userRoles
             };
 
@@ -135,7 +131,6 @@ namespace EmployeeManagement.Controllers
 
                 if (result.Succeeded)
                 {
-
                     return RedirectToAction("ListUsers");
                 }
 
