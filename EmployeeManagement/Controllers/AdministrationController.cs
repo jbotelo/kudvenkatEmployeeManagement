@@ -12,8 +12,9 @@ using System.Threading.Tasks;
 
 namespace EmployeeManagement.Controllers
 {
-    [Authorize(Roles = "Admin, User")]  // Rol Admin OR User
-    [Authorize(Roles = "Admin")]        // Rol Admin AND other Authorize constraints
+    //[Authorize(Roles = "Admin, User")]  // Rol Admin OR User
+    //[Authorize(Roles = "Admin")]        // Rol Admin AND other Authorize constraints
+    [Authorize(Policy = "AdminRolePolicy")]  //Roles are Claims with the Type "Role"
     public class AdministrationController : Controller
     {
         private readonly RoleManager<IdentityRole> roleManager;
@@ -193,7 +194,7 @@ namespace EmployeeManagement.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost, Authorize(Policy = "DeleteRolePolicy")]
         public async Task<IActionResult> DeleteRole(string id)
         {
             var role = await roleManager.FindByIdAsync(id);
