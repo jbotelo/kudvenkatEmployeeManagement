@@ -34,7 +34,8 @@ namespace EmployeeManagement
                 option.Password.RequiredUniqueChars = 3;
             }).AddEntityFrameworkStores<AppDbContext>();
 
-            services.AddMvc(option => {
+            services.AddMvc(option =>
+            {
                 option.EnableEndpointRouting = false;
 
                 var policy = new AuthorizationPolicyBuilder()
@@ -42,28 +43,42 @@ namespace EmployeeManagement
                                     .Build();
 
                 option.Filters.Add(new AuthorizeFilter(policy));
-
             }).AddXmlSerializerFormatters();
 
             services.ConfigureApplicationCookie(options =>
             {
-                options.AccessDeniedPath = new PathString("/Administration/AccessDenied"); 
+                options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
             });
 
             services.AddAuthorization(options =>
             {
+                //options.AddPolicy("DeleteRolePolicy",
+                //    policy => policy.RequireClaim("Delete Role", "true"));
+
                 options.AddPolicy("DeleteRolePolicy",
-                    policy => policy.RequireClaim("Delete Role","true"));
+                  policy => policy.RequireAssertion(context =>
+                      (context.User.IsInRole("Admin") &&
+                      context.User.HasClaim(claim => claim.Type == "Delete Role" && claim.Value == "true")) ||
+                      context.User.IsInRole("Super Admin")
+                  ));
 
                 options.AddPolicy("EditRolePolicy",
-                    policy => policy.RequireClaim("Edit Role","true"));
+                    policy => policy.RequireAssertion(context =>
+                        (context.User.IsInRole("Admin") &&
+                        context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "true")) ||
+                        context.User.IsInRole("Super Admin")
+                    ));
+
+                //options.AddPolicy("AdminRolePolicy",
+                //    policy => policy.RequireRole("Admin"));
 
                 options.AddPolicy("AdminRolePolicy",
-                    policy => policy.RequireRole("Admin"));
+                    policy => policy.RequireAssertion(context =>
+                        context.User.IsInRole("Admin") || context.User.IsInRole("Super Admin")
+                    ));
             });
 
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,7 +91,7 @@ namespace EmployeeManagement
             else
             {
                 app.UseExceptionHandler("/Error");
- 
+
                 app.UseStatusCodePagesWithReExecute("/Error/{0}");
             }
 
