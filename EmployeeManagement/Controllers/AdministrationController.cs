@@ -338,7 +338,7 @@ namespace EmployeeManagement.Controllers
             return View(roles);
         }
 
-        [HttpGet, Authorize(Policy ="EditRolePolicy")]
+        [HttpGet, Authorize(Policy = "EditRolePolicy")]
         public async Task<IActionResult> EditRole(string id)
         {
             var role = await roleManager.FindByIdAsync(id);
@@ -478,6 +478,12 @@ namespace EmployeeManagement.Controllers
             }
 
             return RedirectToAction("EditRole", new { Id = roleId });
+        }
+
+        [HttpGet, AllowAnonymous]
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
