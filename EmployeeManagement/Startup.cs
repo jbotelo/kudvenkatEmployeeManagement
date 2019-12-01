@@ -53,9 +53,6 @@ namespace EmployeeManagement
 
             services.AddAuthorization(options =>
             {
-                //options.AddPolicy("DeleteRolePolicy",
-                //    policy => policy.RequireClaim("Delete Role", "true"));
-
                 options.AddPolicy("DeleteRolePolicy",
                   policy => policy.RequireAssertion(context =>
                       (context.User.IsInRole("Admin") &&
@@ -63,18 +60,10 @@ namespace EmployeeManagement
                       context.User.IsInRole("Super Admin")
                   ));
 
-                //options.AddPolicy("EditRolePolicy",
-                //    policy => policy.RequireAssertion(context =>
-                //        (context.User.IsInRole("Admin") &&
-                //        context.User.HasClaim(claim => claim.Type == "Edit Role" && claim.Value == "true")) ||
-                //        context.User.IsInRole("Super Admin")
-                //    ));
-
                 options.AddPolicy("EditRolePolicy",
                     policy => policy.AddRequirements(new ManageAdminRolesAndClaimsRequirement()));
 
-                //options.AddPolicy("AdminRolePolicy",
-                //    policy => policy.RequireRole("Admin"));
+                //options.InvokeHandlersAfterFailure = false;
 
                 options.AddPolicy("AdminRolePolicy",
                     policy => policy.RequireAssertion(context =>
