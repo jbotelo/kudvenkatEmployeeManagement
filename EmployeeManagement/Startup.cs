@@ -35,13 +35,19 @@ namespace EmployeeManagement
                 option.Password.RequiredLength = 9;
                 option.Password.RequiredUniqueChars = 3;
                 option.SignIn.RequireConfirmedEmail = true;
+
+                option.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
             })
             .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+            .AddDefaultTokenProviders()
+            .AddTokenProvider<CustomEmailConfirmationTokenProvider<ApplicationUser>>("CustomEmailConfirmation");
 
             services.Configure<DataProtectionTokenProviderOptions>(o =>
                                                                    o.TokenLifespan = TimeSpan.FromHours(5));
 
+            services.Configure<CustomEmailConfirmationTokenProviderOptions>(o =>
+                                                                            o.TokenLifespan = TimeSpan.FromDays(3));
+            
             services.AddMvc(option =>
             {
                 option.EnableEndpointRouting = false;
@@ -96,6 +102,7 @@ namespace EmployeeManagement
             services.AddScoped<IEmployeeRepository, SQLEmployeeRepository>();
             services.AddSingleton<IAuthorizationHandler, CanEditOnlyOtherAdminRolesAndClaimsHandler>();
             services.AddSingleton<IAuthorizationHandler, SuperAdminHandler>();
+            services.AddSingleton<DataProtectionPurposeStrings>(); 
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
