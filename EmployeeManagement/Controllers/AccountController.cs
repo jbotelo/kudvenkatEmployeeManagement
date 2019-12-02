@@ -3,6 +3,7 @@ using EmployeeManagement.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -15,12 +16,15 @@ namespace EmployeeManagement.Controllers
     {
         private readonly UserManager<ApplicationUser> userManager;
         private readonly SignInManager<ApplicationUser> signInManager;
+        private readonly ILogger<AccountController> logger;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-                                   SignInManager<ApplicationUser> signInManager)
+                                   SignInManager<ApplicationUser> signInManager,
+                                   ILogger<AccountController> logger)
         {
             this.userManager = userManager;
             this.signInManager = signInManager;
+            this.logger = logger;
         }
 
         [HttpPost]
@@ -65,13 +69,23 @@ namespace EmployeeManagement.Controllers
 
                 if (result.Succeeded)
                 {
-                    if (signInManager.IsSignedIn(User) && User.IsInRole("Admin"))
+                    var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                    var confirmationLink = Url.Action("ConfirmEmail", "Account",
+                                                      new { userId = user.Id, token = token }, Request.Scheme);
+
+                    logger.Log(LogLevel.Warning, confirmationLink);
+
+                    if (signInManager.IsSignedIn(User) &&
+                        (User.IsInRole("Admin") || User.IsInRole("Super Admin")))
                     {
                         return RedirectToAction("ListUsers", "Administration");
                     }
 
-                    await signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("index", "home");
+                    ViewBag.ErrorTitle = "Registration Successful";
+                    ViewBag.ErrorMessage = "Before you can Login, please confirm your email" +
+                        " by clicking on the confirmation link we have email you.";
+                    return View("Error");
                 }
 
                 foreach (var error in result.Errors)
@@ -81,6 +95,33 @@ namespace EmployeeManagement.Controllers
             }
 
             return View(model);
+        }
+
+        [HttpGet,AllowAnonymous]
+        public async Task<IActionResult> ConfirmEmail(string userId, string token)
+        {
+            if (userId==null || token==null)
+            {
+                return RedirectToAction("index", "home");
+            }
+
+            var user = await userManager.FindByIdAsync(userId);
+
+            if(user==null)
+            {
+                ViewBag.ErrorMessage = $"The user Id = {userId} is invalid";
+                return View("Not Found");
+            }
+
+            var result = await userManager.ConfirmEmailAsync(user, token);
+
+            if (result.Succeeded)
+            {
+                return View();
+            }
+
+            ViewBag.ErrorTitle = "Email cannot be confirmed";
+            return View("Error");
         }
 
         [HttpGet, AllowAnonymous]
@@ -98,8 +139,19 @@ namespace EmployeeManagement.Controllers
         [HttpPost, AllowAnonymous]
         public async Task<IActionResult> Login(LoginViewModel model, string returnUrl)
         {
+            model.ExternalLogins = (await signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+
             if (ModelState.IsValid)
             {
+                var user = await userManager.FindByEmailAsync(model.Email);
+
+                if (user != null && !user.EmailConfirmed &&
+                    (await userManager.CheckPasswordAsync(user, model.Password)))
+                {
+                    ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+                    return View(model);
+                }
+
                 var result = await signInManager.PasswordSignInAsync(model.Email, model.Password,
                                 model.RememberMe, false);
 
@@ -154,6 +206,20 @@ namespace EmployeeManagement.Controllers
                 return View("Login", loginViewModel);
             }
 
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            ApplicationUser user = null;
+
+            if (email != null)
+            {
+                user = await userManager.FindByEmailAsync(email);
+
+                if (user != null && !user.EmailConfirmed)
+                {
+                    ModelState.AddModelError(string.Empty, "Email not confirmed yet");
+                    return View("Login", loginViewModel);
+                }
+            }
+
             var signInResult = await signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey,
                                                     isPersistent: false, bypassTwoFactor: true);
             if (signInResult.Succeeded)
@@ -162,13 +228,9 @@ namespace EmployeeManagement.Controllers
             }
             else
             {
-                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
-
                 if (email != null)
                 {
-                    var user = await userManager.FindByEmailAsync(email);
-
-                    if (user==null)
+                    if (user == null)
                     {
                         user = new ApplicationUser()
                         {
@@ -176,6 +238,19 @@ namespace EmployeeManagement.Controllers
                             Email = info.Principal.FindFirstValue(ClaimTypes.Email)
                         };
                         await userManager.CreateAsync(user);
+
+                        var token = await userManager.GenerateEmailConfirmationTokenAsync(user);
+
+                        var confirmationLink = Url.Action("ConfirmEmail", "Account",
+                                                          new { userId = user.Id, token = token }, Request.Scheme);
+
+                        logger.Log(LogLevel.Warning, confirmationLink);
+
+                        ViewBag.ErrorTitle = "Registration Successful";
+                        ViewBag.ErrorMessage = "Before you can Login, please confirm your email" +
+                            " by clicking on the confirmation link we have email you.";
+                        return View("Error");
+
                     }
 
                     await userManager.AddLoginAsync(user, info);
