@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <Platforms>AnyCPU;x64</Platforms>
     <AspNetCoreHostingModel>OutOfProcess</AspNetCoreHostingModel>
+    <UserSecretsId>a592a4bd-f1c9-4553-b44b-3c8d5fdbc4cc</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
