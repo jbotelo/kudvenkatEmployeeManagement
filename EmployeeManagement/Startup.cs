@@ -46,6 +46,21 @@ namespace EmployeeManagement
                 option.Filters.Add(new AuthorizeFilter(policy));
             }).AddXmlSerializerFormatters();
 
+            services.AddAuthentication()
+                .AddGoogle(options =>
+                {
+                    //---https://console.developers.google.com/ GooglePlus API OAuth
+                    options.ClientId = "{Your-Google-Client-Id}";
+                    options.ClientSecret = "{Your-Google-Client-Secret}";
+                    //options.CallbackPath = "new-call-back-path";
+                })
+                .AddFacebook(options =>
+                {
+                    //---https://developers.facebook.com/ Facebook Login
+                    options.AppId = "{Your-Facebook-Client-Id}";
+                    options.AppSecret = "{Your-Facebook-Client-Secret}";
+                });
+
             services.ConfigureApplicationCookie(options =>
             {
                 options.AccessDeniedPath = new PathString("/Administration/AccessDenied");
