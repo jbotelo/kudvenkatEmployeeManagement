@@ -37,6 +37,9 @@ namespace EmployeeManagement
                 option.SignIn.RequireConfirmedEmail = true;
 
                 option.Tokens.EmailConfirmationTokenProvider = "CustomEmailConfirmation";
+
+                option.Lockout.MaxFailedAccessAttempts = 3;
+                option.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders()
