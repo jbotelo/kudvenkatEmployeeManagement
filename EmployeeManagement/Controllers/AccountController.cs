@@ -27,23 +27,59 @@ namespace EmployeeManagement.Controllers
             this.logger = logger;
         }
 
-        [HttpGet,AllowAnonymous]
+        [HttpGet]
+        public IActionResult ChangePassword()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                var user = await userManager.GetUserAsync(User);
+                if (user == null)
+                {
+                    return RedirectToAction("Login");
+                }
+
+                var result = await userManager.ChangePasswordAsync(user,
+                                                    model.CurrentPassword, model.NewPassword);
+                if (!result.Succeeded)
+                {
+                    foreach (var error in result.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                        return View();
+                    }
+                }
+
+                await signInManager.RefreshSignInAsync(user);
+                return View("ChangePasswordConfirmation");
+            }
+
+            return View(model);
+        }
+
+        [HttpGet, AllowAnonymous]
         public IActionResult ResetPassword(string token, string email)
         {
-            if (token==null||email==null)
+            if (token == null || email == null)
             {
                 ModelState.AddModelError(string.Empty, "Invalid password reset token");
             }
             return View();
         }
-        [HttpPost,AllowAnonymous]
+
+        [HttpPost, AllowAnonymous]
         public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
         {
             if (ModelState.IsValid)
             {
                 var user = await userManager.FindByEmailAsync(model.Email);
 
-                if (user!=null)
+                if (user != null)
                 {
                     var result = await userManager.ResetPasswordAsync(user, model.Token, model.Password);
                     if (result.Succeeded)
@@ -62,7 +98,6 @@ namespace EmployeeManagement.Controllers
             return View(model);
         }
 
-
         [HttpGet, AllowAnonymous]
         public IActionResult ForgotPassword()
         {
@@ -76,7 +111,7 @@ namespace EmployeeManagement.Controllers
             {
                 var user = await userManager.FindByEmailAsync(model.Email);
 
-                if (user!=null&& await userManager.IsEmailConfirmedAsync(user))
+                if (user != null && await userManager.IsEmailConfirmedAsync(user))
                 {
                     var token = await userManager.GeneratePasswordResetTokenAsync(user);
                     var passwordResetLink = Url.Action("ResetPassword", "Account",
@@ -160,17 +195,17 @@ namespace EmployeeManagement.Controllers
             return View(model);
         }
 
-        [HttpGet,AllowAnonymous]
+        [HttpGet, AllowAnonymous]
         public async Task<IActionResult> ConfirmEmail(string userId, string token)
         {
-            if (userId==null || token==null)
+            if (userId == null || token == null)
             {
                 return RedirectToAction("index", "home");
             }
 
             var user = await userManager.FindByIdAsync(userId);
 
-            if(user==null)
+            if (user == null)
             {
                 ViewBag.ErrorMessage = $"The user Id = {userId} is invalid";
                 return View("Not Found");
@@ -313,7 +348,6 @@ namespace EmployeeManagement.Controllers
                         ViewBag.ErrorMessage = "Before you can Login, please confirm your email" +
                             " by clicking on the confirmation link we have email you.";
                         return View("Error");
-
                     }
 
                     await userManager.AddLoginAsync(user, info);
